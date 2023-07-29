@@ -1,7 +1,6 @@
 import { formatDay, getWeatherIcon } from '../helpers/formatNumbers';
 
-function Day(props) {
-  const { date, max, min, code, isToday } = props;
+function Day({ date, max, min, code, isToday }) {
   return (
     <li className='day'>
       <span>{getWeatherIcon(code)}</span>
