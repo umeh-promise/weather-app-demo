@@ -1,17 +1,27 @@
-import { useState } from 'react';
-import { useFetch } from './hooks/useFetch';
+import { useEffect, useRef } from 'react';
+import { useFetchWeather } from './hooks/useFetchWeather';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import Weather from './components/Weather';
 
 function App() {
-  const [state, setState] = useState({
-    isLoading: false,
-    displayLocation: '',
-    weather: {},
-  });
   const [location, setLocation] = useLocalStorage('location', '');
+  const { isLoading, weather, displayLocation } = useFetchWeather(location);
 
-  useFetch(location, setState);
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.code === 'Enter') {
+        if (searchRef.current === document.activeElement) return;
+        searchRef.current.focus();
+        setLocation('');
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [setLocation]);
 
   return (
     <div className='app'>
@@ -20,15 +30,16 @@ function App() {
         <input
           type='text'
           placeholder='Search for location..'
+          ref={searchRef}
           value={location}
           onChange={(e) => setLocation(e.target.value)}
         />
       </div>
 
-      {state.isLoading ? <p className='loader'>Loading...</p> : ''}
+      {isLoading ? <p className='loader'>Loading...</p> : ''}
 
-      {state.weather.weathercode && (
-        <Weather weather={state.weather} location={state.displayLocation} />
+      {weather.weathercode && (
+        <Weather weather={weather} location={displayLocation} />
       )}
     </div>
   );
